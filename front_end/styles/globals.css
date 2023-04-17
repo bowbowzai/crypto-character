@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.hover-flow {
+  @apply cursor-pointer hover:translate-x-1 hover:-translate-y-1 my-5 transition
+}

@@ -1,4 +1,5 @@
 # Crypto Character
+![image](https://user-images.githubusercontent.com/74807962/233130881-9b7891ce-28e4-463c-8a09-dcf160c0a4a0.png)
 👋 Welcome to the Crypto Character, where all of us can own a unique character with customizable styles! The contract uses IPFS to store the style images of the character and allows the owner to add more styles to the hair, eyes, cloth, and mouth.
 
 ## ✍️ How it works

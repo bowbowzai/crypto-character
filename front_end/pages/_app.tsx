@@ -1,13 +1,14 @@
 import type { AppProps } from "next/app";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createClient, WagmiConfig } from "wagmi";
-import { polygonMumbai } from "wagmi/chains";
+import { polygonMumbai, localhost } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@rainbow-me/rainbowkit/styles.css";
 import "@/styles/globals.css";
 
 const { chains, provider } = configureChains(
-  [polygonMumbai],
+  [polygonMumbai, localhost],
   [publicProvider()]
 );
 
@@ -22,11 +23,15 @@ const wagmiClient = createClient({
   provider,
 });
 
+const queryClient = new QueryClient();
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains}>
-        <Component {...pageProps} />{" "}
+        <QueryClientProvider client={queryClient}>
+          <Component {...pageProps} />{" "}
+        </QueryClientProvider>
       </RainbowKitProvider>
     </WagmiConfig>
   );

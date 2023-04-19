@@ -12,6 +12,9 @@ export const networkConfig: networkConfigInfo = {
     31337: {
         blockConfirmations: 1,
     },
+    1337: {
+        blockConfirmations: 1,
+    },
     11155111: {
         blockConfirmations: 5,
     },

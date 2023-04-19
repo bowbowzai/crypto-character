@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+/// @title CryptoCharacter
+/// @author Ng Ju Peng
+/// @notice Track ownership of each part of the character
 contract CryptoCharacter {
     struct CharacterPartOwnership {
         string styleURI;
@@ -15,16 +18,19 @@ contract CryptoCharacter {
         CharacterPartOwnership cloth;
     }
 
+    // in order to gain the ownership of the part of the character, at least > MIN_BID_AMOUNT + character part.highest bid
     uint256 private constant MIN_BID_AMOUNT = 0.001 ether;
 
     address private immutable i_owner;
+
+    // the only character in this contract
     Character private s_character;
+
+    // track the style ipfs uri
     string[] internal s_hairStyleURIs;
     string[] internal s_eyeStyleURIs;
     string[] internal s_mouthStyleURIs;
     string[] internal s_clothStyleURIs;
-
-    mapping(string => bool) valueExists;
 
     /********************
         Events
@@ -74,6 +80,7 @@ contract CryptoCharacter {
         string[] memory _clothStyleURIs
     ) {
         i_owner = msg.sender;
+        // initialize the character
         s_character = Character({
             hair: CharacterPartOwnership({
                 styleURI: _hairStyleURIs[0],
@@ -102,6 +109,15 @@ contract CryptoCharacter {
         s_clothStyleURIs = _clothStyleURIs;
     }
 
+    fallback() external payable {}
+
+    receive() external payable {}
+
+    /********************
+        Gain part ownership of the character
+    ********************/
+
+    /// @notice gain the ownership of character's hair and use the index in s_hairStyleURIs as hair outfit
     function selectNewHairStyle(uint256 _index)
         external
         payable
@@ -121,6 +137,7 @@ contract CryptoCharacter {
         );
     }
 
+    /// @notice gain the ownership of character's eye and use the index in s_eyeStyleURIs as eye outfit
     function selectNewEyeStyle(uint256 _index)
         external
         payable
@@ -140,6 +157,7 @@ contract CryptoCharacter {
         );
     }
 
+    /// @notice gain the ownership of character's mouth and use the index in s_mouthStyleURIs as mouth outfit
     function selectNewMouthStyle(uint256 _index)
         external
         payable
@@ -159,6 +177,7 @@ contract CryptoCharacter {
         );
     }
 
+    /// @notice gain the ownership of character's cloth and use the index in s_clothStyleURIs as cloth outfit
     function selectNewClothStyle(uint256 _index)
         external
         payable
@@ -178,6 +197,9 @@ contract CryptoCharacter {
         );
     }
 
+    /********************
+        Add new outfit for each part of the character
+    ********************/
     function addNewHairStyle(string memory _newHairStyleURI)
         external
         onlyOwner

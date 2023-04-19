@@ -5,6 +5,7 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <title>Crypto Character</title>
+        <link rel="icon" type="image/svg+xml" href="/logo.jpg" />
       </Head>
       <body>
         <Main />

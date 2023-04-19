@@ -1,5 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
-import Image, { StaticImageData } from "next/image";
+import React, { useState } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -7,11 +6,6 @@ import {
   AccordionItemButton,
   AccordionItemPanel,
 } from "react-accessible-accordion";
-import "react-accessible-accordion/dist/fancy-example.css";
-import { hairs } from "@/assets/hairstyle";
-import { eyes } from "@/assets/eyes";
-import { mouths } from "@/assets/mouth";
-import { clothes } from "@/assets/clothes";
 import {
   useClothStyleURIs,
   useEyeStyleURIs,
@@ -30,6 +24,7 @@ import { Character } from "@/types/TCharacter";
 import { toast, ToastContainer } from "react-toastify";
 import { FaEthereum } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
+import "react-accessible-accordion/dist/fancy-example.css";
 
 interface StyleOptionProps {
   highestBid: {
@@ -89,7 +84,6 @@ const StyleOption = ({ highestBid, getCharacterRefetch }: StyleOptionProps) => {
 
   function handleSetNewStyle(part: string, index: number, bidAmount: string) {
     const amountNeeded = ethers.utils.parseEther("0.0011").add(bidAmount);
-    console.log(amountNeeded);
     selectNewStyle({
       part,
       index,

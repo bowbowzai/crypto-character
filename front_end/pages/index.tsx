@@ -89,7 +89,7 @@ export default function Home() {
   return (
     <main
       id="print"
-      className="font-press-start h-screen bg-white dark:bg-black min-w-[450px] min-h-screen"
+      className="font-press-start bg-white dark:bg-black min-h-screen"
     >
       <div className="fixed top-4 left-4">
         <ConnectButton />
@@ -103,7 +103,7 @@ export default function Home() {
           <Loading />
         </div>
       ) : (
-        <div>
+        <div className="relative min-w-[430px]">
           <div className="fixed left-[50%] -translate-x-[50%] w-[300px]">
             {/* character */}
             <div className="crypto-character relative select-none">

@@ -11,7 +11,7 @@ const useCryptoCharacter = () => {
   const provider = useProvider();
 
   const contract = wagmi.useContract({
-    address: localhost.cryptocharacter,
+    address: mumbai.cryptocharacter,
     abi: cryptocharacter,
     signerOrProvider: signer || provider,
   });

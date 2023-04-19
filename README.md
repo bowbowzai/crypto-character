@@ -9,6 +9,13 @@ The ownership of the part of the character can be transferred to a new owner if 
 ## 🍬 Contract details
 The Crypto Character Contract is written in both Solidity, Solidity inline assembly, and pure Yul for learning purposes.
 
+## 🚀 Deployment Links
+
+Front-end deployed link: 
+
+Crypto Character Contract: https://mumbai.polygonscan.com/address/0x3Ae5A3E073Ae97EC4F53665E9D41EdD94D956cd9 
+
+
 ## ✍️ Conclusion
 The Crypto Character Contract is a fun and innovative way to own a unique character with customizable styles. The contract is secure, transparent, and decentralized, ensuring that the ownership and styles of the character remain in the hands of the most passionate users.
 

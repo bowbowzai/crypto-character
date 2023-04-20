@@ -2,6 +2,8 @@
 ![image](https://user-images.githubusercontent.com/74807962/233130881-9b7891ce-28e4-463c-8a09-dcf160c0a4a0.png)
 👋 Welcome to the Crypto Character, where all of us can own a unique character with customizable styles! The contract uses IPFS to store the style images of the character and allows the owner to add more styles to the hair, eyes, cloth, and mouth.
 
+Note link: https://www.notion.so/Yul-Inline-assembly-notes-571105127f924e9eaf5ba206da635b51?pvs=4
+
 ## ✍️ How it works
 There will be only one character in this contract, and if a user wants to change the hairstyle, eyes, cloth, or mouth of the character, they must pay a larger amount than the highest bid of the previous bidder. Once the payment is made, the user gains ownership of that part of the character, and the character's style is updated to the new style selected by the user.
 

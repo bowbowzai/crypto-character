@@ -28,20 +28,23 @@ const deployCryptoCharacter: DeployFunction = async function (
         mouthStyleURIs,
         clothStyleURIs,
     ]
-    const cryptoCharacter = await deploy("CryptoCharacter", {
-        from: deployer,
-        args: args,
-        log: true,
-        waitConfirmations: waitBlockConfirmation,
-    })
+    const cryptoCharacterInlineAssembly = await deploy(
+        "CryptoCharacterInlineAssembly",
+        {
+            from: deployer,
+            args: args,
+            log: true,
+            waitConfirmations: waitBlockConfirmation,
+        }
+    )
 
     if (
         !developmentChains.includes(chainName) &&
         process.env.ETHERSCAN_API_KEY
     ) {
-        await verify(cryptoCharacter.address, args)
+        await verify(cryptoCharacterInlineAssembly.address, args)
     }
 }
 
 export default deployCryptoCharacter
-deployCryptoCharacter.tags = ["all", "cryptoCharacter"]
+deployCryptoCharacter.tags = ["all", "cryptoCharacter", "inline-assembly"]

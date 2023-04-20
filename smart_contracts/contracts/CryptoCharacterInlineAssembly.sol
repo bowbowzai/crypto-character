@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "../node_modules/hardhat/console.sol";
+
 /// @title CryptoCharacter
 /// @author Ng Ju Peng
 /// @notice Track ownership of each part of the character
-contract CryptoCharacter {
+contract CryptoCharacterInlineAssembly {
     struct CharacterPartOwnership {
         string styleURI;
         address owner;
@@ -21,7 +23,7 @@ contract CryptoCharacter {
     // in order to gain the ownership of the part of the character, at least > MIN_BID_AMOUNT + character part.highest bid
     uint256 private constant MIN_BID_AMOUNT = 0.001 ether;
 
-    address private immutable i_owner;
+    address private i_owner;
 
     // the only character in this contract
     Character private s_character;
@@ -43,11 +45,6 @@ contract CryptoCharacter {
     );
     event NewStyleAdded(string uri);
 
-    /********************
-        Errors
-    ********************/
-    error CryptoCharacter__InsufficientBidAmount();
-    error CryptoCharacter__NotOwner();
     error CryptoCharacter__StyleExisted();
     error CryptoCharacter__AccessOutOfBound();
 
@@ -55,22 +52,41 @@ contract CryptoCharacter {
         Modifiers
     ********************/
     modifier onlyOwner() {
-        if (msg.sender != i_owner) {
-            revert CryptoCharacter__NotOwner();
+        // 4E6F744F776E6572
+        // NotOwner();
+        address owner = i_owner;
+        assembly {
+            if iszero(eq(caller(), owner)) {
+                mstore(0, hex"4E6F744F776E6572")
+                revert(0, 0x20)
+            }
         }
         _;
     }
 
     modifier isEnoughBidAmount(CharacterPartOwnership memory _part) {
-        if (msg.value <= _part.highestBid + MIN_BID_AMOUNT) {
-            revert CryptoCharacter__InsufficientBidAmount();
+        // 496E73756666696369656E74426964416D6F756E74
+        // InsufficientBidAmount
+        assembly {
+            if iszero(
+                gt(callvalue(), add(MIN_BID_AMOUNT, mload(add(_part, 0x40))))
+            ) {
+                mstore(0, hex"496E73756666696369656E74426964416D6F756E74")
+                revert(0, 0x20)
+            }
         }
         _;
     }
 
     modifier isValidIndex(uint256 _index, string[] memory _arr) {
-        if (_index < 0 || _index >= _arr.length) {
-            revert CryptoCharacter__AccessOutOfBound();
+        // 4163636573734F75744F66426F756E64
+        // AccessOutOfBound
+        assembly {
+            let arrLength := mload(_arr)
+            if or(lt(_index, 0), iszero(lt(_index, arrLength))) {
+                mstore(0, hex"4163636573734F75744F66426F756E64")
+                revert(0, 0x20)
+            }
         }
         _;
     }
@@ -81,7 +97,13 @@ contract CryptoCharacter {
         string[] memory _mouthStyleURIs,
         string[] memory _clothStyleURIs
     ) {
-        i_owner = msg.sender;
+        uint256 characterSlot = 0;
+        assembly {
+            sstore(0, caller())
+            characterSlot := sload(s_character.slot)
+        }
+        console.log("Character slot ", characterSlot);
+
         // initialize the character
         s_character = Character({
             hair: CharacterPartOwnership({
@@ -123,8 +145,8 @@ contract CryptoCharacter {
     function selectNewHairStyle(uint256 _index)
         external
         payable
-        isEnoughBidAmount(s_character.hair)
         isValidIndex(_index, s_hairStyleURIs)
+        isEnoughBidAmount(s_character.hair)
     {
         s_character.hair = CharacterPartOwnership({
             styleURI: s_hairStyleURIs[_index],
@@ -143,8 +165,8 @@ contract CryptoCharacter {
     function selectNewEyeStyle(uint256 _index)
         external
         payable
-        isEnoughBidAmount(s_character.eye)
         isValidIndex(_index, s_eyeStyleURIs)
+        isEnoughBidAmount(s_character.eye)
     {
         s_character.eye = CharacterPartOwnership({
             styleURI: s_eyeStyleURIs[_index],
@@ -163,8 +185,8 @@ contract CryptoCharacter {
     function selectNewMouthStyle(uint256 _index)
         external
         payable
-        isEnoughBidAmount(s_character.mouth)
         isValidIndex(_index, s_mouthStyleURIs)
+        isEnoughBidAmount(s_character.mouth)
     {
         s_character.mouth = CharacterPartOwnership({
             styleURI: s_mouthStyleURIs[_index],
@@ -183,8 +205,8 @@ contract CryptoCharacter {
     function selectNewClothStyle(uint256 _index)
         external
         payable
-        isEnoughBidAmount(s_character.cloth)
         isValidIndex(_index, s_clothStyleURIs)
+        isEnoughBidAmount(s_character.cloth)
     {
         s_character.cloth = CharacterPartOwnership({
             styleURI: s_clothStyleURIs[_index],

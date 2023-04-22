@@ -8,7 +8,7 @@ import "../node_modules/hardhat/console.sol";
 /// @notice Track ownership of each part of the character
 contract CryptoCharacterInlineAssembly {
     struct CharacterPartOwnership {
-        string styleURI;
+        uint256 index;
         address owner;
         uint256 highestBid;
     }
@@ -40,7 +40,7 @@ contract CryptoCharacterInlineAssembly {
     event UpdateCharacterStyle(
         string indexed part,
         address indexed bidder,
-        string uri,
+        uint256 index,
         uint256 amount
     );
     event NewStyleAdded(string uri);
@@ -97,40 +97,82 @@ contract CryptoCharacterInlineAssembly {
         string[] memory _mouthStyleURIs,
         string[] memory _clothStyleURIs
     ) {
-        uint256 characterSlot = 0;
         assembly {
             sstore(0, caller())
-            characterSlot := sload(s_character.slot)
         }
-        console.log("Character slot ", characterSlot);
 
-        // initialize the character
-        s_character = Character({
-            hair: CharacterPartOwnership({
-                styleURI: _hairStyleURIs[0],
-                owner: msg.sender,
-                highestBid: 0.001 ether
-            }),
-            eye: CharacterPartOwnership({
-                styleURI: _eyeStyleURIs[0],
-                owner: msg.sender,
-                highestBid: 0.001 ether
-            }),
-            mouth: CharacterPartOwnership({
-                styleURI: _mouthStyleURIs[0],
-                owner: msg.sender,
-                highestBid: 0.001 ether
-            }),
-            cloth: CharacterPartOwnership({
-                styleURI: _clothStyleURIs[0],
-                owner: msg.sender,
-                highestBid: 0.001 ether
-            })
-        });
-        s_hairStyleURIs = _hairStyleURIs;
-        s_eyeStyleURIs = _eyeStyleURIs;
-        s_mouthStyleURIs = _mouthStyleURIs;
-        s_clothStyleURIs = _clothStyleURIs;
+        setStrToStorage(0, _hairStyleURIs);
+        setStrToStorage(1, _eyeStyleURIs);
+        setStrToStorage(2, _mouthStyleURIs);
+        setStrToStorage(3, _clothStyleURIs);
+
+        /**
+         * Character storage layout
+         * slot 1 -> styleURIIndex(hair)✔
+         * slot 2 -> owner(hair)✔
+         * slot 3 -> highestBid(hair)✔
+         * slot 4 -> styleURIIndex(eye)✔
+         * slot 5 -> owner(eye)✔
+         * slot 6 -> highestBid(eye)✔
+         * slot 7 -> styleURIIndex(mouth)✔
+         * slot 8 -> owner(mouth)✔
+         * slot 9 -> highestBid(mouth)✔
+         * slot 10 -> styleURIIndex(cloth)✔
+         * slot 11 -> owner(cloth)✔
+         * slot 12 -> highestBid(cloth)✔
+         */
+        uint256 index = 1;
+        for (uint256 i = 1; i <= 4; i++) {
+            // hair style uri location
+            bytes32 location = keccak256(abi.encode(index));
+            uint256 length;
+            assembly {
+                // style pointer
+                let pointer
+                switch i
+                case 1 {
+                    pointer := mload(add(_hairStyleURIs, 0x20))
+                }
+                case 2 {
+                    pointer := mload(add(_eyeStyleURIs, 0x20))
+                }
+                case 3 {
+                    pointer := mload(add(_mouthStyleURIs, 0x20))
+                }
+                case 4 {
+                    pointer := mload(add(_clothStyleURIs, 0x20))
+                }
+                // style length
+                length := or(
+                    pointer,
+                    hex"0000000000000000000000000000000000000000000000000000000000000001"
+                )
+                sstore(index, length)
+                sstore(add(location, 0), mload(add(pointer, 0x20)))
+                sstore(add(location, 1), mload(add(pointer, 0x40)))
+                sstore(add(location, 2), mload(add(pointer, 0x60)))
+            }
+            index += 3;
+        }
+        assembly {
+            // uri index
+            sstore(1, 0)
+            sstore(3, 0)
+            sstore(7, 0)
+            sstore(10, 0)
+
+            // part owner
+            sstore(2, caller())
+            sstore(5, caller())
+            sstore(8, caller())
+            sstore(11, caller())
+
+            // highest bid
+            sstore(3, 1000000000000000) // 0.001 ETH
+            sstore(6, 1000000000000000)
+            sstore(9, 1000000000000000)
+            sstore(12, 1000000000000000)
+        }
     }
 
     fallback() external payable {}
@@ -148,17 +190,17 @@ contract CryptoCharacterInlineAssembly {
         isValidIndex(_index, s_hairStyleURIs)
         isEnoughBidAmount(s_character.hair)
     {
-        s_character.hair = CharacterPartOwnership({
-            styleURI: s_hairStyleURIs[_index],
-            owner: msg.sender,
-            highestBid: msg.value
-        });
-        emit UpdateCharacterStyle(
-            "hair",
-            msg.sender,
-            s_hairStyleURIs[_index],
-            msg.value
-        );
+        assembly {
+            sstore(1, _index)
+            sstore(2, caller())
+            sstore(3, callvalue())
+            let
+                signature
+            := 0x4326431441db3c438d46bb147b8b9590f117e828f1a38ec9501581da2819bbf9
+            mstore(0, _index)
+            mstore(0x20, callvalue())
+            log3(0x0, 0x40, signature, "hair", caller())
+        }
     }
 
     /// @notice gain the ownership of character's eye and use the index in s_eyeStyleURIs as eye outfit
@@ -168,17 +210,17 @@ contract CryptoCharacterInlineAssembly {
         isValidIndex(_index, s_eyeStyleURIs)
         isEnoughBidAmount(s_character.eye)
     {
-        s_character.eye = CharacterPartOwnership({
-            styleURI: s_eyeStyleURIs[_index],
-            owner: msg.sender,
-            highestBid: msg.value
-        });
-        emit UpdateCharacterStyle(
-            "eye",
-            msg.sender,
-            s_eyeStyleURIs[_index],
-            msg.value
-        );
+        assembly {
+            sstore(4, _index)
+            sstore(5, caller())
+            sstore(6, callvalue())
+            let
+                signature
+            := 0x4326431441db3c438d46bb147b8b9590f117e828f1a38ec9501581da2819bbf9
+            mstore(0, _index)
+            mstore(0x20, callvalue())
+            log3(0x0, 0x40, signature, "eye", caller())
+        }
     }
 
     /// @notice gain the ownership of character's mouth and use the index in s_mouthStyleURIs as mouth outfit
@@ -188,17 +230,17 @@ contract CryptoCharacterInlineAssembly {
         isValidIndex(_index, s_mouthStyleURIs)
         isEnoughBidAmount(s_character.mouth)
     {
-        s_character.mouth = CharacterPartOwnership({
-            styleURI: s_mouthStyleURIs[_index],
-            owner: msg.sender,
-            highestBid: msg.value
-        });
-        emit UpdateCharacterStyle(
-            "mouth",
-            msg.sender,
-            s_mouthStyleURIs[_index],
-            msg.value
-        );
+        assembly {
+            sstore(7, _index)
+            sstore(8, caller())
+            sstore(9, callvalue())
+            let
+                signature
+            := 0x4326431441db3c438d46bb147b8b9590f117e828f1a38ec9501581da2819bbf9
+            mstore(0, _index)
+            mstore(0x20, callvalue())
+            log3(0x0, 0x40, signature, "mouth", caller())
+        }
     }
 
     /// @notice gain the ownership of character's cloth and use the index in s_clothStyleURIs as cloth outfit
@@ -208,17 +250,17 @@ contract CryptoCharacterInlineAssembly {
         isValidIndex(_index, s_clothStyleURIs)
         isEnoughBidAmount(s_character.cloth)
     {
-        s_character.cloth = CharacterPartOwnership({
-            styleURI: s_clothStyleURIs[_index],
-            owner: msg.sender,
-            highestBid: msg.value
-        });
-        emit UpdateCharacterStyle(
-            "cloth",
-            msg.sender,
-            s_clothStyleURIs[_index],
-            msg.value
-        );
+        assembly {
+            sstore(10, _index)
+            sstore(11, caller())
+            sstore(12, callvalue())
+            let
+                signature
+            := 0x4326431441db3c438d46bb147b8b9590f117e828f1a38ec9501581da2819bbf9
+            mstore(0, _index)
+            mstore(0x20, callvalue())
+            log3(0x0, 0x40, signature, "cloth", caller())
+        }
     }
 
     /********************
@@ -231,6 +273,11 @@ contract CryptoCharacterInlineAssembly {
         if (_isStyleURIExist(_newHairStyleURI, s_hairStyleURIs)) {
             revert CryptoCharacter__StyleExisted();
         }
+        assembly {
+            // increase the length by 1
+            sstore(s_hairStyleURIs.slot, add(sload(s_hairStyleURIs.slot), 1))
+        }
+
         s_hairStyleURIs.push(_newHairStyleURI);
         emit NewStyleAdded(_newHairStyleURI);
     }
@@ -282,6 +329,53 @@ contract CryptoCharacterInlineAssembly {
             }
         }
         return false;
+    }
+
+    // 0 -> hair
+    // 1 -> eye
+    // 2 -> mouth
+    // 3 -> cloth
+    function setStrToStorage(uint256 option, string[] memory _strs) private {
+        bytes32 actualStringLocation;
+        uint256 slot;
+        assembly {
+            // store the length of the array in hairstyle uri slot
+            switch option
+            case 0 {
+                slot := s_hairStyleURIs.slot
+            }
+            case 1 {
+                slot := s_eyeStyleURIs.slot
+            }
+            case 2 {
+                slot := s_mouthStyleURIs.slot
+            }
+            case 3 {
+                slot := s_clothStyleURIs.slot
+            }
+            sstore(slot, mload(_strs))
+        }
+        bytes32 location = keccak256(abi.encode(slot));
+        for (uint256 i = 1; i <= _strs.length; i++) {
+            actualStringLocation = keccak256(abi.encode(location));
+            assembly {
+                // the length of the string
+                let pointer := mload(add(_strs, mul(0x20, i)))
+                // set the lowest bit to 1 to indicate the long string
+                let setLowestBit := or(
+                    pointer,
+                    hex"0000000000000000000000000000000000000000000000000000000000000001"
+                )
+                // store the length of the string in location
+                sstore(location, setLowestBit)
+                // store the actual string in actualStringLocation
+                // ipfs hash will need 3 slot
+                sstore(add(actualStringLocation, 0), mload(add(pointer, 0x20)))
+                sstore(add(actualStringLocation, 1), mload(add(pointer, 0x40)))
+                sstore(add(actualStringLocation, 2), mload(add(pointer, 0x60)))
+                location := add(location, 1)
+            }
+        }
     }
 
     /********************

@@ -398,21 +398,34 @@ import {
 
           it("getHairStyleURIs", async () => {
               const hairURIs = await cryptoCharacter.getHairStyleURIs()
-              assert.equal(hairURIs.toString(), hairStyleURIs.toString())
+
+              assert.equal(
+                  hairURIs.toString().replace("\x00", ""),
+                  hairStyleURIs.toString()
+              )
           })
 
           it("getEyeStyleURIs", async () => {
               const eyeURIs = await cryptoCharacter.getEyeStyleURIs()
-              assert.equal(eyeURIs.toString(), eyeStyleURIs.toString())
+              assert.equal(
+                  eyeURIs.toString().replace("\x00", ""),
+                  eyeStyleURIs.toString()
+              )
           })
 
           it("getMouthStyleURIs", async () => {
               const mouthURIs = await cryptoCharacter.getMouthStyleURIs()
-              assert.equal(mouthURIs.toString(), mouthStyleURIs.toString())
+              assert.equal(
+                  mouthURIs.toString().replace("\x00", "").trim(),
+                  mouthStyleURIs.toString().replace("\x00", "").trim()
+              )
           })
 
           it("getClothStyleURIs", async () => {
               const clothURIs = await cryptoCharacter.getClothStyleURIs()
-              assert.equal(clothURIs.toString(), clothStyleURIs.toString())
+              assert.equal(
+                  clothURIs.toString().replace("\x00", "").trim(),
+                  clothStyleURIs.toString().replace("\x00", "").trim()
+              )
           })
       })

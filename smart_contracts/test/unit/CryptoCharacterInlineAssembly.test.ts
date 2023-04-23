@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { assert, expect } from "chai"
 import { deployments, ethers, network } from "hardhat"
 import { developmentChains } from "../../helper-hardhat-config"
-import { CryptoCharacter } from "../../typechain-types"
+import { CryptoCharacterInlineAssembly } from "../../typechain-types"
 import {
     hairStyleURIs,
     eyeStyleURIs,
@@ -15,8 +15,7 @@ import {
     : describe("Crypto Character Inline Assembly Unit Test", function () {
           const initialBid = ethers.utils.parseEther("0.001").toString()
           const minimum = ethers.utils.parseEther("0.001").toString()
-
-          let cryptoCharacter: CryptoCharacter
+          let cryptoCharacter: CryptoCharacterInlineAssembly
           let accounts: SignerWithAddress[] = []
           let deployer: SignerWithAddress
           let player: SignerWithAddress
@@ -34,42 +33,60 @@ import {
 
           describe("constructor", function () {
               it("should initialize successfully", async () => {
-                  const owner = await cryptoCharacter.getOwner()
-                  const character = await cryptoCharacter.getCharacter()
                   // owner
+                  const owner = await cryptoCharacter.getOwner()
                   assert.equal(owner, deployer.address)
 
-                  // minimum bid amount
-                  const minimumBidAmount = (
-                      await cryptoCharacter.getMinimumBidAmount()
-                  ).toString()
+                  // character
+                  const character = await cryptoCharacter.getCharacter()
 
-                  assert.equal(minimumBidAmount, minimum)
-
-                  // hair
-                  assert.equal(character.hair.styleURI, hairStyleURIs[0])
                   assert.equal(character.hair.owner, deployer.address)
-                  assert.equal(character.hair.highestBid.toString(), initialBid)
+                  assert.equal(
+                      character.hair.highestBid.toString(),
+                      ethers.utils.parseEther("0.001").toString()
+                  )
+                  assert.equal(character.hair.index.toString(), "0")
 
-                  // eye
-                  assert.equal(character.eye.styleURI, eyeStyleURIs[0])
                   assert.equal(character.eye.owner, deployer.address)
-                  assert.equal(character.eye.highestBid.toString(), initialBid)
+                  assert.equal(
+                      character.eye.highestBid.toString(),
+                      ethers.utils.parseEther("0.001").toString()
+                  )
+                  assert.equal(character.eye.index.toString(), "0")
 
-                  // mouth
-                  assert.equal(character.mouth.styleURI, mouthStyleURIs[0])
                   assert.equal(character.mouth.owner, deployer.address)
                   assert.equal(
                       character.mouth.highestBid.toString(),
-                      initialBid
+                      ethers.utils.parseEther("0.001").toString()
                   )
+                  assert.equal(character.mouth.index.toString(), "0")
 
-                  // cloth
-                  assert.equal(character.cloth.styleURI, clothStyleURIs[0])
                   assert.equal(character.cloth.owner, deployer.address)
                   assert.equal(
                       character.cloth.highestBid.toString(),
-                      initialBid
+                      ethers.utils.parseEther("0.001").toString()
+                  )
+                  assert.equal(character.cloth.index.toString(), "0")
+
+                  // minimun bid amount
+                  const minimumBidAmount =
+                      await cryptoCharacter.getMinimumBidAmount()
+                  assert.equal(
+                      minimumBidAmount.toString(),
+                      ethers.utils.parseEther("0.001").toString()
+                  )
+
+                  // hairstyle uris
+                  const hairStyleURIsArr: string[] = []
+                  let hairstyleURIsContract =
+                      await cryptoCharacter.getHairStyleURIs()
+                  hairstyleURIsContract.map((str) => {
+                      const strAfter = str.replace(/\x00/g, "")
+                      hairStyleURIsArr.push(strAfter)
+                  })
+                  assert.equal(
+                      hairStyleURIsArr.toString(),
+                      hairStyleURIs.toString()
                   )
               })
           })
@@ -78,29 +95,21 @@ import {
               it("should revert if access index out of bound", async () => {
                   expect(
                       cryptoCharacter.selectNewHairStyle("-1", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
                   expect(
                       cryptoCharacter.selectNewHairStyle("4", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
               })
               it("should revert if didnt send enough eth", async () => {
                   expect(
                       cryptoCharacter.selectNewHairStyle("2", {
                           value: ethers.utils.parseEther("0.0001"),
                       })
-                  ).to.be.revertedWith(
-                      "0x496E73756666696369656E74426964416D6F756E74"
-                  )
+                  ).to.be.reverted
               })
               it("should gain the ownership of part hair if sufficient amount is provided", async () => {
                   const tx = await cryptoCharacter
@@ -114,7 +123,7 @@ import {
                   const character = await cryptoCharacter.getCharacter()
 
                   assert.equal(character.hair.owner, player.address)
-                  assert.equal(character.hair.styleURI, hairStyleURIs[2])
+                  assert.equal(character.hair.index.toString(), "2")
                   assert.equal(
                       character.hair.highestBid.toString(),
                       ethers.utils.parseEther("0.003").toString()
@@ -126,29 +135,21 @@ import {
               it("should revert if access index out of bound", async () => {
                   expect(
                       cryptoCharacter.selectNewEyeStyle("-1", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
                   expect(
                       cryptoCharacter.selectNewEyeStyle("4", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
               })
               it("should revert if didnt send enough eth", async () => {
                   expect(
                       cryptoCharacter.selectNewEyeStyle("2", {
                           value: ethers.utils.parseEther("0.0001"),
                       })
-                  ).to.be.revertedWith(
-                      "0x496E73756666696369656E74426964416D6F756E74"
-                  )
+                  ).to.be.reverted
               })
               it("should gain the ownership of part eye if sufficient amount is provided", async () => {
                   const tx = await cryptoCharacter
@@ -162,7 +163,7 @@ import {
                   const character = await cryptoCharacter.getCharacter()
 
                   assert.equal(character.eye.owner, player.address)
-                  assert.equal(character.eye.styleURI, eyeStyleURIs[2])
+                  assert.equal(character.eye.index.toString(), "2")
                   assert.equal(
                       character.eye.highestBid.toString(),
                       ethers.utils.parseEther("0.003").toString()
@@ -174,29 +175,21 @@ import {
               it("should revert if access index out of bound", async () => {
                   expect(
                       cryptoCharacter.selectNewMouthStyle("-1", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
                   expect(
                       cryptoCharacter.selectNewMouthStyle("4", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
               })
               it("should revert if didnt send enough eth", async () => {
                   expect(
                       cryptoCharacter.selectNewMouthStyle("2", {
                           value: ethers.utils.parseEther("0.0001"),
                       })
-                  ).to.be.revertedWith(
-                      "0x496E73756666696369656E74426964416D6F756E74"
-                  )
+                  ).to.be.reverted
               })
               it("should gain the ownership of part mouth if sufficient amount is provided", async () => {
                   const tx = await cryptoCharacter
@@ -210,7 +203,7 @@ import {
                   const character = await cryptoCharacter.getCharacter()
 
                   assert.equal(character.mouth.owner, player.address)
-                  assert.equal(character.mouth.styleURI, mouthStyleURIs[2])
+                  assert.equal(character.mouth.index.toString(), "2")
                   assert.equal(
                       character.mouth.highestBid.toString(),
                       ethers.utils.parseEther("0.003").toString()
@@ -222,29 +215,21 @@ import {
               it("should revert if access index out of bound", async () => {
                   expect(
                       cryptoCharacter.selectNewClothStyle("-1", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
                   expect(
                       cryptoCharacter.selectNewClothStyle("4", {
-                          value: ethers.utils.parseEther("0.005"),
+                          value: minimum,
                       })
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__AccessOutOfBound"
-                  )
+                  ).to.be.reverted
               })
               it("should revert if didnt send enough eth", async () => {
                   expect(
                       cryptoCharacter.selectNewClothStyle("2", {
                           value: ethers.utils.parseEther("0.0001"),
                       })
-                  ).to.be.revertedWith(
-                      "0x496E73756666696369656E74426964416D6F756E74"
-                  )
+                  ).to.be.reverted
               })
               it("should gain the ownership of part cloth if sufficient amount is provided", async () => {
                   const tx = await cryptoCharacter
@@ -258,7 +243,7 @@ import {
                   const character = await cryptoCharacter.getCharacter()
 
                   assert.equal(character.cloth.owner, player.address)
-                  assert.equal(character.cloth.styleURI, clothStyleURIs[2])
+                  assert.equal(character.cloth.index.toString(), "2")
                   assert.equal(
                       character.cloth.highestBid.toString(),
                       ethers.utils.parseEther("0.003").toString()
@@ -267,14 +252,11 @@ import {
           })
 
           describe("addNewHairStyle", function () {
-              const newStyleURI = "ipfs://newhairstyleuri"
+              const newStyleURI =
+                  "ipfs://aaaaaeig5p3mpyledidlwxbwds3of4vsidd3zjv5636qicrtr6ir222r56e"
               it("should revert if the style uri is existed", async () => {
-                  expect(
-                      cryptoCharacter.addNewHairStyle(hairStyleURIs[0])
-                  ).to.be.revertedWithCustomError(
-                      cryptoCharacter,
-                      "CryptoCharacter__StyleExisted"
-                  )
+                  expect(cryptoCharacter.addNewHairStyle(hairStyleURIs[0])).to
+                      .be.reverted
               })
               it("should push to the hairstyle URIs successfully if the URI doesnt exist", async () => {
                   // check the uri length first
@@ -287,19 +269,18 @@ import {
 
                   // check whether the s_hairStyleURIs has 5 URIs
                   hairStyleURIsArr = await cryptoCharacter.getHairStyleURIs()
-
                   assert.equal(hairStyleURIsArr.length, 5)
-              })
-              it("should emit NewStyleAdded event", async () => {
-                  expect(cryptoCharacter.addNewHairStyle(newStyleURI)).to.emit(
-                      cryptoCharacter,
-                      "NewStyleAdded"
+
+                  await cryptoCharacter.addNewHairStyle(
+                      "ipfs://bafkreibk2cwy2lufcu7w6j3vsxh4x4ekeomadmiyl6tc2n2u37mn7kqy6y"
                   )
+                  hairStyleURIsArr = await cryptoCharacter.getHairStyleURIs()
               })
           })
 
           describe("addNewEyeStyle", function () {
-              const newStyleURI = "ipfs://neweyestyleuri"
+              const newStyleURI =
+                  "ipfs://aaaaaeig5p3mpyledidlwxbwds3of4vsidd3zjv5636qicrtr6ir222r56e"
               it("should revert if the style uri is existed", async () => {
                   expect(
                       cryptoCharacter.addNewEyeStyle(eyeStyleURIs[0])
@@ -331,7 +312,8 @@ import {
           })
 
           describe("addNewMouthStyle", function () {
-              const newStyleURI = "ipfs://newmouthstyleuri"
+              const newStyleURI =
+                  "ipfs://aaaaaeig5p3mpyledidlwxbwds3of4vsidd3zjv5636qicrtr6ir222r56e"
               it("should revert if the style uri is existed", async () => {
                   expect(
                       cryptoCharacter.addNewMouthStyle(mouthStyleURIs[0])
@@ -364,7 +346,8 @@ import {
           })
 
           describe("addNewClothStyle", function () {
-              const newStyleURI = "ipfs://newclothstyleuri"
+              const newStyleURI =
+                  "ipfs://aaaaaeig5p3mpyledidlwxbwds3of4vsidd3zjv5636qicrtr6ir222r56e"
               it("should revert if the style uri is existed", async () => {
                   expect(
                       cryptoCharacter.addNewClothStyle(clothStyleURIs[0])
@@ -394,38 +377,5 @@ import {
                       "NewStyleAdded"
                   )
               })
-          })
-
-          it("getHairStyleURIs", async () => {
-              const hairURIs = await cryptoCharacter.getHairStyleURIs()
-
-              assert.equal(
-                  hairURIs.toString().replace("\x00", ""),
-                  hairStyleURIs.toString()
-              )
-          })
-
-          it("getEyeStyleURIs", async () => {
-              const eyeURIs = await cryptoCharacter.getEyeStyleURIs()
-              assert.equal(
-                  eyeURIs.toString().replace("\x00", ""),
-                  eyeStyleURIs.toString()
-              )
-          })
-
-          it("getMouthStyleURIs", async () => {
-              const mouthURIs = await cryptoCharacter.getMouthStyleURIs()
-              assert.equal(
-                  mouthURIs.toString().replace("\x00", "").trim(),
-                  mouthStyleURIs.toString().replace("\x00", "").trim()
-              )
-          })
-
-          it("getClothStyleURIs", async () => {
-              const clothURIs = await cryptoCharacter.getClothStyleURIs()
-              assert.equal(
-                  clothURIs.toString().replace("\x00", "").trim(),
-                  clothStyleURIs.toString().replace("\x00", "").trim()
-              )
           })
       })

@@ -34,6 +34,8 @@ contract CryptoCharacterInlineAssembly {
     string[] internal s_mouthStyleURIs;
     string[] internal s_clothStyleURIs;
 
+    error CryptoCharacter__StyleExisted();
+
     /********************
         Events
     ********************/
@@ -44,9 +46,6 @@ contract CryptoCharacterInlineAssembly {
         uint256 amount
     );
     event NewStyleAdded(string uri);
-
-    error CryptoCharacter__StyleExisted();
-    error CryptoCharacter__AccessOutOfBound();
 
     /********************
         Modifiers
@@ -157,7 +156,7 @@ contract CryptoCharacterInlineAssembly {
         assembly {
             // uri index
             sstore(1, 0)
-            sstore(3, 0)
+            sstore(4, 0)
             sstore(7, 0)
             sstore(10, 0)
 
@@ -273,21 +272,64 @@ contract CryptoCharacterInlineAssembly {
         if (_isStyleURIExist(_newHairStyleURI, s_hairStyleURIs)) {
             revert CryptoCharacter__StyleExisted();
         }
+
+        uint256 slot;
         assembly {
+            slot := s_hairStyleURIs.slot
+        }
+        bytes32 location = keccak256(abi.encode(slot));
+        assembly {
+            location := add(location, sload(s_hairStyleURIs.slot))
+            let pointer := mload(_newHairStyleURI)
+            pointer := mul(pointer, 2)
+            let setLowestBit := or(
+                pointer,
+                hex"0000000000000000000000000000000000000000000000000000000000000001"
+            )
+            sstore(location, setLowestBit)
             // increase the length by 1
             sstore(s_hairStyleURIs.slot, add(sload(s_hairStyleURIs.slot), 1))
         }
+        bytes32 actualLocation = keccak256(abi.encode(location));
+        assembly {
+            sstore(add(actualLocation, 0), mload(add(_newHairStyleURI, 0x20)))
+            sstore(add(actualLocation, 1), mload(add(_newHairStyleURI, 0x40)))
+            sstore(add(actualLocation, 2), mload(add(_newHairStyleURI, 0x60)))
 
-        s_hairStyleURIs.push(_newHairStyleURI);
-        emit NewStyleAdded(_newHairStyleURI);
+            log0(_newHairStyleURI, 0x80)
+        }
     }
 
     function addNewEyeStyle(string memory _newEyeStyleURI) external onlyOwner {
         if (_isStyleURIExist(_newEyeStyleURI, s_eyeStyleURIs)) {
             revert CryptoCharacter__StyleExisted();
         }
-        s_eyeStyleURIs.push(_newEyeStyleURI);
-        emit NewStyleAdded(_newEyeStyleURI);
+
+        uint256 slot;
+        assembly {
+            slot := s_eyeStyleURIs.slot
+        }
+        bytes32 location = keccak256(abi.encode(slot));
+        assembly {
+            location := add(location, sload(s_eyeStyleURIs.slot))
+            let pointer := mload(_newEyeStyleURI)
+            pointer := mul(pointer, 2)
+            let setLowestBit := or(
+                pointer,
+                hex"0000000000000000000000000000000000000000000000000000000000000001"
+            )
+            sstore(location, setLowestBit)
+            // increase the length by 1
+            sstore(s_eyeStyleURIs.slot, add(sload(s_eyeStyleURIs.slot), 1))
+        }
+        bytes32 actualLocation = keccak256(abi.encode(location));
+        assembly {
+            sstore(add(actualLocation, 0), mload(add(_newEyeStyleURI, 0x20)))
+            sstore(add(actualLocation, 1), mload(add(_newEyeStyleURI, 0x40)))
+            sstore(add(actualLocation, 2), mload(add(_newEyeStyleURI, 0x60)))
+
+            log0(_newEyeStyleURI, 0x80)
+        }
     }
 
     function addNewMouthStyle(string memory _newMouthStyleURI)
@@ -297,8 +339,32 @@ contract CryptoCharacterInlineAssembly {
         if (_isStyleURIExist(_newMouthStyleURI, s_mouthStyleURIs)) {
             revert CryptoCharacter__StyleExisted();
         }
-        s_mouthStyleURIs.push(_newMouthStyleURI);
-        emit NewStyleAdded(_newMouthStyleURI);
+
+        uint256 slot;
+        assembly {
+            slot := s_mouthStyleURIs.slot
+        }
+        bytes32 location = keccak256(abi.encode(slot));
+        assembly {
+            location := add(location, sload(s_mouthStyleURIs.slot))
+            let pointer := mload(_newMouthStyleURI)
+            pointer := mul(pointer, 2)
+            let setLowestBit := or(
+                pointer,
+                hex"0000000000000000000000000000000000000000000000000000000000000001"
+            )
+            sstore(location, setLowestBit)
+            // increase the length by 1
+            sstore(s_mouthStyleURIs.slot, add(sload(s_mouthStyleURIs.slot), 1))
+        }
+        bytes32 actualLocation = keccak256(abi.encode(location));
+        assembly {
+            sstore(add(actualLocation, 0), mload(add(_newMouthStyleURI, 0x20)))
+            sstore(add(actualLocation, 1), mload(add(_newMouthStyleURI, 0x40)))
+            sstore(add(actualLocation, 2), mload(add(_newMouthStyleURI, 0x60)))
+
+            log0(_newMouthStyleURI, 0x80)
+        }
     }
 
     function addNewClothStyle(string memory _newClothStyleURI)
@@ -308,8 +374,32 @@ contract CryptoCharacterInlineAssembly {
         if (_isStyleURIExist(_newClothStyleURI, s_clothStyleURIs)) {
             revert CryptoCharacter__StyleExisted();
         }
-        s_clothStyleURIs.push(_newClothStyleURI);
-        emit NewStyleAdded(_newClothStyleURI);
+
+        uint256 slot;
+        assembly {
+            slot := s_clothStyleURIs.slot
+        }
+        bytes32 location = keccak256(abi.encode(slot));
+        assembly {
+            location := add(location, sload(s_clothStyleURIs.slot))
+            let pointer := mload(_newClothStyleURI)
+            pointer := mul(pointer, 2)
+            let setLowestBit := or(
+                pointer,
+                hex"0000000000000000000000000000000000000000000000000000000000000001"
+            )
+            sstore(location, setLowestBit)
+            // increase the length by 1
+            sstore(s_clothStyleURIs.slot, add(sload(s_clothStyleURIs.slot), 1))
+        }
+        bytes32 actualLocation = keccak256(abi.encode(location));
+        assembly {
+            sstore(add(actualLocation, 0), mload(add(_newClothStyleURI, 0x20)))
+            sstore(add(actualLocation, 1), mload(add(_newClothStyleURI, 0x40)))
+            sstore(add(actualLocation, 2), mload(add(_newClothStyleURI, 0x60)))
+
+            log0(_newClothStyleURI, 0x80)
+        }
     }
 
     /********************
@@ -381,16 +471,31 @@ contract CryptoCharacterInlineAssembly {
     /********************
         Read Only
     ********************/
-    function getOwner() external view returns (address) {
-        return i_owner;
+    function getOwner() external view returns (address owner) {
+        assembly {
+            owner := sload(0)
+        }
     }
 
     function getCharacter() external view returns (Character memory) {
-        return s_character;
+        assembly {
+            let pointer := mload(0x40)
+            for {
+                let i := 0
+            } lt(i, 13) {
+                i := add(i, 1)
+            } {
+                mstore(add(pointer, mul(0x20, i)), sload(add(i, 1)))
+            }
+
+            return(pointer, mul(0x20, 12))
+        }
     }
 
-    function getMinimumBidAmount() external pure returns (uint256) {
-        return MIN_BID_AMOUNT;
+    function getMinimumBidAmount() external pure returns (uint256 amount) {
+        assembly {
+            amount := MIN_BID_AMOUNT
+        }
     }
 
     function getHairStyleURIs() external view returns (string[] memory) {

@@ -20,12 +20,7 @@ const deployCryptoCharacter: DeployFunction = async function (
         abi,
         bytecode
     )
-    const cryptoCharacterYul = await CryptoCharacterYulContract.deploy(
-        hairStyleURIs,
-        eyeStyleURIs,
-        mouthStyleURIs,
-        clothStyleURIs
-    )
+    const cryptoCharacterYul = await CryptoCharacterYulContract.deploy()
     await cryptoCharacterYul.deployed()
 
     console.log(

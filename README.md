@@ -14,7 +14,7 @@ The Crypto Character Contract is written in both Solidity, Solidity inline assem
 
 ## 🚀 Deployment Links
 
-Front-end deployed link: 
+Front-end deployed link: https://crypto-character.vercel.app/
 
 Crypto Character Contract: https://mumbai.polygonscan.com/address/0x3Ae5A3E073Ae97EC4F53665E9D41EdD94D956cd9 
 

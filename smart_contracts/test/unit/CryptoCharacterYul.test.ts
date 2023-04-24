@@ -10,6 +10,7 @@ import {
     clothStyleURIs,
 } from "../../helper-hardhat-config"
 import { providers } from "ethers"
+import { keccak256 } from "ethers/lib/utils"
 
 var abi = require("../../build/CryptoCharacterYul.abi.json").abi
 var bytecode = require("../../build/CryptoCharacterYul.bytecode")
@@ -89,8 +90,6 @@ var bytecode = require("../../build/CryptoCharacterYul.bytecode")
                           gasLimit: 30000000,
                       }
                   )
-                  const hairStyleURIsContract =
-                      await cryptoCharacter.getHairStyleURIs()
               })
           })
       })
